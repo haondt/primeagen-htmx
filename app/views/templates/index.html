@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>HTMX LESGOOOOOOOO</title>
+		<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+		<script src="https://unpkg.com/htmx.org@1.9.6"></script>
+		<script src="https://unpkg.com/hyperscript.org@0.9.11"></script>
+	</head>
+	<body _="on htmx:beforeSwap
+			if the event's detail.xhr.status == 422
+				set the event's detail.shouldSwap to true
+				set the event's detail.isError to false">
+		{% include 'form.html' %}
+		<hr />
+		{% include 'display.html' %}
+	</body>
+</html>

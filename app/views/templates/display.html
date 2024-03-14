@@ -1,0 +1,7 @@
+<div class="flex flex-col" id="display">
+	{% for contact in d.contacts %}
+		{% with contact=contact %}
+			{% include 'contact.html' %}
+		{% endwith %}
+	{% endfor %}
+</div>
