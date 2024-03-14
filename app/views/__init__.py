@@ -1,4 +1,6 @@
 from flask import Flask, render_template, request
+from typing import Any as trust
+import time
 
 class FalsyAny:
     def __bool__(self):
@@ -11,7 +13,7 @@ class FalsyAny:
 class Anon:
     def __init__(self, d={}):
         self._anon_contents = d
-    def __getattr__(self, name):
+    def __getattr__(self, name) -> trust:
         if name in self._anon_contents:
             return self._anon_contents.get(name)
         return FalsyAny()
@@ -22,14 +24,24 @@ class Anon:
             self._anon_contents[name] = value
 
 def init_state():
+    next_contact_id = 0
     def add_contact(s, name, email):
         contact = Anon({'name': name, 'email': email})
+        nonlocal next_contact_id
+        contact.id = next_contact_id
+        next_contact_id += 1
         s.contacts.append(contact)
         return contact
+    def index_of(s, id: int) -> int:
+        for i, c in enumerate(s.contacts):
+            if c.id == id:
+                return i
+        return -1
 
     state = Anon()
     state.contacts = []
     state.add_contact = lambda n, e: add_contact(state, n, e)
+    state.index_of = lambda i: index_of(state, i)
 
     state.add_contact("John", "jd@gmail.com")
     state.add_contact("Clara", "cd@gmail.com")
@@ -63,3 +75,15 @@ def apply(site):
         contact = state.add_contact(name, email)
         return render_template('form.html', d=Anon()) + \
             render_template('oob-contact.html', contact=contact)
+
+    @site.route('/contacts/<id>', methods=['DELETE'])
+    def delete_contact(id):
+        time.sleep(3)
+        id = int(id)
+        index = state.index_of(id)
+        if index < 0:
+            return "Contact not found", 404
+        state.contacts = state.contacts[:index] + state.contacts[index + 1:]
+
+        return '', 200
+
